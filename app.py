@@ -11,6 +11,7 @@ db = SQLAlchemy(app)
 #TODO dodać kolumne shape i zapisywać to jako jedna tabela dla innych kształtów
 class Measurement(db.Model):
     id = db.Column(db.Integer, primary_key = True)
+    shape = db.Column(db.String)
     sensor_id = db.Column(db.Integer)
     x = db.Column(db.Float)
     y = db.Column(db.Float)
@@ -23,6 +24,7 @@ def load_csv_to_db():
         reader = csv.DictReader(f)
         for row in reader:
             m = Measurement(
+                shape=row['shape'],
                 sensor_id=int(row['sensor_id']),
                 x=float(row['x']),
                 y=float(row['y']),
