@@ -1,0 +1,60 @@
+body {
+    background-color: oklch(0.12 0.02 264);
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+.header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+}
+
+.logo{
+    font-size: 50px;
+    font-weight: 500;
+    color: oklch(0.96 0.05 264);
+}
+
+.grid-container{
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    align-items: center;
+    gap: 16px;
+}
+
+#cv-ECG {
+    border: 1px solid oklch(0.3 0.04 264); 
+    border-radius: 12px;
+    background-color: oklch(0.17 0.025 264);
+    display: block;
+    width: 80%;
+    height: 400px;
+    cursor: grab;
+}
+
+#cv-BVP {
+    border: 1px solid oklch(0.3 0.04 264); 
+    border-radius: 12px;
+    background-color: oklch(0.17 0.025 264);
+    display: block;
+    width: 80%;
+    height: 400px;
+    cursor: grab;
+}
+
+.sensor-label{
+    background-color: oklch(0.17 0.025 264);
+    border-color: oklch(0.3 0.04 264); ;
+    color: oklch(0.9 0.05 264);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
