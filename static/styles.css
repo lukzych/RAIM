@@ -23,26 +23,7 @@ body {
     grid-template-columns: 80px 1fr;
     align-items: center;
     gap: 16px;
-}
-
-#cv-ECG {
-    border: 1px solid oklch(0.3 0.04 264); 
-    border-radius: 12px;
-    background-color: oklch(0.17 0.025 264);
-    display: block;
-    width: 80%;
-    height: 400px;
-    cursor: grab;
-}
-
-#cv-BVP {
-    border: 1px solid oklch(0.3 0.04 264); 
-    border-radius: 12px;
-    background-color: oklch(0.17 0.025 264);
-    display: block;
-    width: 80%;
-    height: 400px;
-    cursor: grab;
+    padding: 0 24px;
 }
 
 .sensor-label{
@@ -55,6 +36,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.canvas-wrap {
+    width: 100%;
+    height: 200px;
+    position: relative;
+}
+
+#cv-ECG, #cv-BVP {
+    border: 1px solid oklch(0.3 0.04 264);
+    border-radius: 12px;
+    background-color: oklch(0.17 0.025 264);
+    cursor: grab;
 }
 
 
