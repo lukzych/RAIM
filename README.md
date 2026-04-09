@@ -5,8 +5,8 @@
  <strong>Katedra Inżynierii Biomedycznej (KIB)</strong><br>
 </p>
 <p align="center">
-  <img src="logo_pg.png" height="80">
-  <img src="logo_kib.png" height="80">
+  <img src="logo_PG.png" height="80">
+  <img src="logo_KIB.png" height="80">
 </p>
 
 ---
