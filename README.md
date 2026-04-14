@@ -1,10 +1,19 @@
-# Agregacja danych z wielu sensorów (Temat 4)
+<h1 align="center">Agregacja danych z wielu sensorów</h1>
+
+<p align="center">
+  <strong>Politechnika Gdańska</strong><br>
+ <strong>Katedra Inżynierii Biomedycznej (KIB)</strong><br>
+</p>
+<p align="center">
+  <img src="logo_PG.png" height="80">
+  <img src="logo_KIB.png" height="80">
+</p>
 
 ---
 
 ## Informacje o projekcie
 * **Autorzy:** Łukasz Zych, Rafał Kruszewski
-* **Przedmiot:** Rozwój aplikacji medycznych w medycynie
+* **Przedmiot:** Rozwój aplikacji internetowych w medycynie
 * **Rok studiów:** 3
 * **Prowadzący:** dr inż. Anna Jezierska
 
