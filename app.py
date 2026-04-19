@@ -34,7 +34,11 @@ with open('data/BVP.csv') as f:
     for row in reader:
         all_bvp.append(float(row['BVP']))
 
-
+all_eda = []
+with open('data/EDA.csv') as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        all_eda.append(float(row['EDA']))
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -44,6 +48,7 @@ def stream():
     def generator():
         index_ecg = 0
         index_bvp = 0
+        index_eda = 0
         counter = 0
         
         while True:
@@ -59,9 +64,15 @@ def stream():
                 index_bvp = 0
 
 
+            data_eda = all_eda[index_eda: index_eda + 1]
+            index_eda += 1
+            if index_eda >= len(all_eda):
+                index_eda = 0
+
+
             latency_ecg = random.randint(2, 10)
             latency_bvp = random.randint(2,10)
-
+            latency_eda = random.randint(2, 10)
 
             with app.app_context():
                 db.session.add(SensorData(
@@ -76,12 +87,19 @@ def stream():
                     timestamp=datetime.now(),
                     latency_ms=latency_bvp
                 ))
+                db.session.add(SensorData(
+                    sensor="EDA",
+                    value=data_eda[0],
+                    timestamp=datetime.now(),
+                    latency_ms=latency_eda
+                ))
                 counter += 1
                 if counter % 50 == 0:
                     db.session.commit()
 
             yield f"data: {json.dumps({'sensor': 'ECG', 'values': data_ecg})}\n\n"
             yield f"data: {json.dumps({'sensor': 'BVP', 'values': data_bvp})}\n\n"
+            yield f"data: {json.dumps({'sensor': 'EDA', 'values': data_eda})}\n\n"
             time.sleep(0.1)
 
     return Response(generator(), mimetype='text/event-stream')

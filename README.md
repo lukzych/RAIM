@@ -44,6 +44,7 @@ System opiera się na trzech warstwach:
 *  **Warstwa danych:** wykorzystanie bazy WESAD. Dane symulują ciągły strumień informacji z sensorów medycznych.
   - ’ECG.csv’ (Elektrokardiogram) – pomiar aktywności elektrycznej serca, wyrażony w miliwoltach (mV).
   - ’BVP.csv’ (Blood Volume Pulse / Fotopletyzmografia) – sygnał objętości krwi, odczyty z sensora optycznego wyrażone w jednostkach umownych (a.u.).
-*  **Warstwa serwera (Backend):** aplikacja w języku Python (Flask), która odpowiada za wczytywanie danych, ich wstępne przetwarzanie oraz udostępnianie ich do interfejsu użytkownika.
-*  **Warstwa interfejsu (Frontend):** aplikacja działająca w przeglądarce, wykorzystująca JavaScript oraz technologię Canvas. Odpowiada za dynamiczną wizualizację i agregację sygnałów oraz obsługę wspólnego dashboardu.
+  - ’EDA.csv’ (Electrodermal Activity) – przewodnictwo skóry, wskaźnik stresu wyrażony w mikrosimensach (µS).
+* **Warstwa serwera (Backend):** aplikacja w języku Python (Flask), która odpowiada za wczytywanie danych, ich wstępne przetwarzanie oraz udostępnianie ich do interfejsu użytkownika.
+* **Warstwa interfejsu (Frontend):** aplikacja działająca w przeglądarce, wykorzystująca JavaScript oraz technologię Canvas. Odpowiada za dynamiczną wizualizację i agregację sygnałów oraz obsługę wspólnego dashboardu.
 

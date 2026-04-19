@@ -44,7 +44,7 @@ body {
     position: relative;
 }
 
-#cv-ECG, #cv-BVP {
+#cv-ECG, #cv-BVP, #cv-EDA {
     border: 1px solid oklch(0.3 0.04 264);
     border-radius: 12px;
     background-color: oklch(0.17 0.025 264);

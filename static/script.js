@@ -44,6 +44,29 @@ const bvpChart = new Chart(document.getElementById('cv-BVP'), {
     }
 });
 
+const edaChart = new Chart(document.getElementById('cv-EDA'), {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            data: [],
+            borderColor: 'oklch(0.7 0.2 120)',
+            borderWidth: 1.5,
+            pointRadius: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { display: false },
+            y: { display: false }
+        }
+    }
+});
+
 const source = new EventSource('/stream');
 
 source.onmessage = function(event) {
@@ -71,5 +94,17 @@ source.onmessage = function(event) {
             }
         });
         bvpChart.update();
+    }
+
+    if (msg.sensor === 'EDA') {
+        msg.values.forEach(value => {
+            edaChart.data.labels.push('');
+            edaChart.data.datasets[0].data.push(value);
+            if (edaChart.data.datasets[0].data.length > 100) {
+                edaChart.data.labels.shift();
+                edaChart.data.datasets[0].data.shift();
+            }
+        });
+        edaChart.update();
     }
 };
