@@ -52,6 +52,12 @@ def stream():
         counter = 0
         
         while True:
+            '''
+            Dane są wysyłane w paczkach co 100ms, czyli
+            Jeśli sensor ECG ma 700Hz to jest 70 na 1ms
+            Albo równe częstotliwości próbkowania, albo
+            idealny dzielnik czasowy
+            '''
             data_ecg = all_ecg[index_ecg: index_ecg + 70]
             index_ecg += 70
             if index_ecg >= len(all_ecg):

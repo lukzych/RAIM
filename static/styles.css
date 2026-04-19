@@ -1,24 +1,65 @@
+:root {
+    --bg: oklch(0.12 0.02 264);
+    --bg-card: oklch(0.17 0.025 264);
+    --text: oklch(0.96 0.05 264);
+    --text-muted: oklch(0.9 0.05 264);
+    --border: oklch(0.3 0.04 264);
+    --cv-bcg-col: oklch(0.17 0.025 264);
+    --cv-border: 1px solid oklch(0.3 0.04 264);
+
+    --ecg: oklch(0.65 0.3256 24.35);
+    --bvp: oklch(0.7 0.2886 136.59);
+    --eda: oklch(0.7 0.1628 322.94);
+}
+
+:root.light {
+    --bg: oklch(0.97 0.01 264);
+    --bg-card: oklch(0.92 0.02 264);
+    --text: oklch(0.2 0.03 264);
+    --text-muted: oklch(0.45 0.03 264);
+    --border: oklch(0.8 0.03 264);
+    --cv-bcg-col: oklch(91.848% 0.00593 264.654);
+    --cv-border: 1px solid oklch(72.991% 0.13115 263.303);
+
+    --ecg: oklch(0.4 0.3256 24.35);
+    --bvp: oklch(0.4 0.2886 136.59);
+    --eda: oklch(0.4 0.1628 322.94);
+}
+
 body {
-    background-color: oklch(0.12 0.02 264);
+    background-color: var(--bg);
+    color: var(--text);
     margin: 0;
     padding: 0;
     font-family: sans-serif;
 }
 
-.header{
+.header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     height: 100px;
+    padding: 0 24px;
 }
 
-.logo{
+.logo {
     font-size: 50px;
     font-weight: 500;
-    color: oklch(0.96 0.05 264);
+    color: var(--text);
 }
 
-.grid-container{
+#theme-btn{
+   color: var(--theme-btn-col);
+    background-color: var(--theme-btn-bcg-col);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: sans-serif;
+}
+
+.grid-container {
     display: grid;
     grid-template-columns: 80px 1fr;
     align-items: center;
@@ -26,10 +67,10 @@ body {
     padding: 0 24px;
 }
 
-.sensor-label{
-    background-color: oklch(0.17 0.025 264);
-    border-color: oklch(0.3 0.04 264); ;
-    color: oklch(0.9 0.05 264);
+.sensor-label {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
     border-radius: 8px;
     padding: 12px 20px;
     font-size: 16px;
@@ -44,11 +85,9 @@ body {
     position: relative;
 }
 
-#cv-ECG, #cv-BVP, #cv-EDA {
-    border: 1px solid oklch(0.3 0.04 264);
+#cv-ECG, #cv-BVP,#cv-EDA  {
+    border: var(--cv-border);
     border-radius: 12px;
-    background-color: oklch(0.17 0.025 264);
+    background-color: var(--cv-bcg-col);
     cursor: grab;
 }
-
-

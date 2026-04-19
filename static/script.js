@@ -4,7 +4,7 @@ const ecgChart = new Chart(document.getElementById('cv-ECG'), {
         labels: [],
         datasets: [{
             data: [],
-            borderColor: 'oklch(0.65 0.18 250)',
+            borderColor: 'oklch(0.5735 0.3256 24.35)',
             borderWidth: 1.5,
             pointRadius: 0
         }]
@@ -27,7 +27,7 @@ const bvpChart = new Chart(document.getElementById('cv-BVP'), {
         labels: [],
         datasets: [{
             data: [],
-            borderColor: 'oklch(0.65 0.18 160)',
+            borderColor: 'oklch(0.65 0.2886 136.59)',
             borderWidth: 1.5,
             pointRadius: 0
         }]
@@ -50,7 +50,7 @@ const edaChart = new Chart(document.getElementById('cv-EDA'), {
         labels: [],
         datasets: [{
             data: [],
-            borderColor: 'oklch(0.7 0.2 120)',
+            borderColor: 'oklch(0.65 0.1628 322.94)',
             borderWidth: 1.5,
             pointRadius: 0
         }]
@@ -108,3 +108,18 @@ source.onmessage = function(event) {
         edaChart.update();
     }
 };
+
+document.getElementById('theme-btn').addEventListener('click', () => {
+    document.documentElement.classList.toggle('light');
+
+        const ecgColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--ecg').trim();
+    const bvpColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--bvp').trim();
+    
+    ecgChart.data.datasets[0].borderColor = ecgColor;
+    bvpChart.data.datasets[0].borderColor = bvpColor;
+    
+    ecgChart.update();
+    bvpChart.update();
+});
