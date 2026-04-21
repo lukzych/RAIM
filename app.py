@@ -8,6 +8,8 @@ import json
 from flask import Flask, render_template, Response
 from flask_sqlalchemy import SQLAlchemy
 
+from itertools import islice
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sensors.db'
 db = SQLAlchemy(app)
@@ -22,59 +24,27 @@ class SensorData(db.Model):
 with app.app_context():
     db.create_all()
 
-all_ecg = []
-with open('data/ECG.csv') as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        all_ecg.append(float(row['ECG']))
 
-all_bvp = []
-with open('data/BVP.csv') as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        all_bvp.append(float(row['BVP']))
-
-all_eda = []
-with open('data/EDA.csv') as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        all_eda.append(float(row['EDA']))
 @app.route("/")
 def index():
     return render_template("index.html")
 
 @app.route("/stream")
 def stream():
+
     def generator():
-        index_ecg = 0
-        index_bvp = 0
-        index_eda = 0
-        counter = 0
         
+        counter = 0
+
+        batch_ecg = batch_reader('data/ECG.csv','ECG',70)
+        batch_bvp = batch_reader('data/BVP.csv', 'BVP', 6)
+        batch_eda = batch_reader('data/EDA.csv','EDA', 1)
+    
         while True:
-            '''
-            Dane są wysyłane w paczkach co 100ms, czyli
-            Jeśli sensor ECG ma 700Hz to jest 70 na 100ms
-            Albo równe częstotliwości próbkowania, albo
-            idealny dzielnik czasowy
-            '''
-            data_ecg = all_ecg[index_ecg: index_ecg + 70]
-            index_ecg += 70
-            if index_ecg >= len(all_ecg):
-                index_ecg = 0
 
-
-            data_bvp = all_bvp[index_bvp: index_bvp + 6]
-            index_bvp += 6
-            if index_bvp >= len(all_bvp):
-                index_bvp = 0
-
-
-            data_eda = all_eda[index_eda: index_eda + 1]
-            index_eda += 1
-            if index_eda >= len(all_eda):
-                index_eda = 0
-
+            data_ecg = next(batch_ecg)
+            data_bvp = next(batch_bvp)
+            data_eda = next(batch_eda)
 
             latency_ecg = random.randint(2, 10)
             latency_bvp = random.randint(2,10)
@@ -109,6 +79,17 @@ def stream():
             time.sleep(0.1)
 
     return Response(generator(), mimetype='text/event-stream')
+
+
+def batch_reader(filepath, column_name, n):
+    while True:
+        with open(filepath) as f:
+            reader = csv.DictReader(f)
+            while True:
+                batch = list(islice(reader, n))
+                if not batch:
+                    break
+                yield [float(row[column_name]) for row in batch]
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
