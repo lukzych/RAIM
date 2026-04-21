@@ -54,7 +54,7 @@ def stream():
         while True:
             '''
             Dane są wysyłane w paczkach co 100ms, czyli
-            Jeśli sensor ECG ma 700Hz to jest 70 na 1ms
+            Jeśli sensor ECG ma 700Hz to jest 70 na 100ms
             Albo równe częstotliwości próbkowania, albo
             idealny dzielnik czasowy
             '''
