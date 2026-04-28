@@ -19,26 +19,67 @@ class SensorData(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False)
     latency_ms = db.Column(db.Float, nullable=False)
 
+
+'''
+Matematyka
+ECG - 700Hz
+BVP - 64Hz
+EDA 0.5 Hz
+
+do bazy leci np. 5 batchy 
+700 * 5
+60 * 5
+1 * 5
+
+'''
 with app.app_context():
     db.create_all()
+    SensorData.query.delete()
+    db.session.commit()
 
-all_ecg = []
-with open('data/ECG.csv') as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        all_ecg.append(float(row['ECG']))
+    with open('data/ECG.csv') as f:
+        reader = csv.DictReader(f)
+        for i, row in enumerate(reader):
+            if i >= 20000:
+                break
+            db.session.add(SensorData(
+                sensor='ECG',
+                value=float(row['ECG']),
+                timestamp=datetime.now(),
+                latency_ms=random.randint(2, 10)
+            ))
+    db.session.commit()
 
-all_bvp = []
-with open('data/BVP.csv') as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        all_bvp.append(float(row['BVP']))
+    with open('data/BVP.csv') as f:
+        reader = csv.DictReader(f)
+        for i, row in enumerate(reader):
+            if i>= 20000:
+                break
+            db.session.add(SensorData(
+                sensor='BVP',
+                value=float(row['BVP']),
+                timestamp=datetime.now(),
+                latency_ms=random.randint(2, 10)
+            ))
+    db.session.commit()
 
-all_eda = []
-with open('data/EDA.csv') as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        all_eda.append(float(row['EDA']))
+    with open('data/EDA.csv') as f:
+        reader = csv.DictReader(f)
+        for i, row in enumerate(reader):
+            if i>= 20000:
+                break
+            db.session.add(SensorData(
+                sensor='EDA',
+                value=float(row['EDA']),
+                timestamp=datetime.now(),
+                latency_ms=random.randint(2, 10)
+            ))
+    db.session.commit()
+
+
+
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -46,69 +87,9 @@ def index():
 @app.route("/stream")
 def stream():
     def generator():
-        index_ecg = 0
-        index_bvp = 0
-        index_eda = 0
-        counter = 0
-        
-        while True:
-            '''
-            Dane są wysyłane w paczkach co 100ms, czyli
-            Jeśli sensor ECG ma 700Hz to jest 70 na 100ms
-            Albo równe częstotliwości próbkowania, albo
-            idealny dzielnik czasowy
-            '''
-            data_ecg = all_ecg[index_ecg: index_ecg + 70]
-            index_ecg += 70
-            if index_ecg >= len(all_ecg):
-                index_ecg = 0
-
-
-            data_bvp = all_bvp[index_bvp: index_bvp + 6]
-            index_bvp += 6
-            if index_bvp >= len(all_bvp):
-                index_bvp = 0
-
-
-            data_eda = all_eda[index_eda: index_eda + 1]
-            index_eda += 1
-            if index_eda >= len(all_eda):
-                index_eda = 0
-
-
-            latency_ecg = random.randint(2, 10)
-            latency_bvp = random.randint(2,10)
-            latency_eda = random.randint(2, 10)
-
-            with app.app_context():
-                db.session.add(SensorData(
-                    sensor="ECG",
-                    value=data_ecg[0],
-                    timestamp=datetime.now(),
-                    latency_ms=latency_ecg
-                ))
-                db.session.add(SensorData(
-                    sensor="BVP",
-                    value=data_bvp[0],
-                    timestamp=datetime.now(),
-                    latency_ms=latency_bvp
-                ))
-                db.session.add(SensorData(
-                    sensor="EDA",
-                    value=data_eda[0],
-                    timestamp=datetime.now(),
-                    latency_ms=latency_eda
-                ))
-                counter += 1
-                if counter % 50 == 0:
-                    db.session.commit()
-
-            yield f"data: {json.dumps({'sensor': 'ECG', 'values': data_ecg})}\n\n"
-            yield f"data: {json.dumps({'sensor': 'BVP', 'values': data_bvp})}\n\n"
-            yield f"data: {json.dumps({'sensor': 'EDA', 'values': data_eda})}\n\n"
-            time.sleep(0.1)
+       pass
 
     return Response(generator(), mimetype='text/event-stream')
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5002)
