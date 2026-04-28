@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 import time
 import json
+import threading
 
 from flask import Flask, render_template, Response
 from flask_sqlalchemy import SQLAlchemy
@@ -24,14 +25,14 @@ class SensorData(db.Model):
 Matematyka
 ECG - 700Hz
 BVP - 64Hz
-EDA 0.5 Hz
+EDA - 4Hz
 
-do bazy leci np. 5 batchy 
-700 * 5
-60 * 5
-1 * 5
-
+do bazy leci
+70 000 ECG
+6400 BVP
+400 EDA
 '''
+
 with app.app_context():
     db.create_all()
     SensorData.query.delete()
@@ -40,43 +41,51 @@ with app.app_context():
     with open('data/ECG.csv') as f:
         reader = csv.DictReader(f)
         for i, row in enumerate(reader):
-            if i >= 20000:
+            if i >= 70000:
                 break
             db.session.add(SensorData(
                 sensor='ECG',
                 value=float(row['ECG']),
                 timestamp=datetime.now(),
-                latency_ms=random.randint(2, 10)
+                latency_ms=0
             ))
     db.session.commit()
 
     with open('data/BVP.csv') as f:
         reader = csv.DictReader(f)
         for i, row in enumerate(reader):
-            if i>= 20000:
+            if i>= 6400:
                 break
             db.session.add(SensorData(
                 sensor='BVP',
                 value=float(row['BVP']),
                 timestamp=datetime.now(),
-                latency_ms=random.randint(2, 10)
+                latency_ms=0
             ))
     db.session.commit()
 
     with open('data/EDA.csv') as f:
         reader = csv.DictReader(f)
         for i, row in enumerate(reader):
-            if i>= 20000:
+            if i>= 400:
                 break
             db.session.add(SensorData(
                 sensor='EDA',
                 value=float(row['EDA']),
                 timestamp=datetime.now(),
-                latency_ms=random.randint(2, 10)
+                latency_ms=0
             ))
-    db.session.commit()
+        db.session.commit()
+
+def pass_ecg_data():
+    with app.app_context():
+        rekordy = SensorData.query.filter_by(sensor='ECG').offset(0).limit(70).all()
+    print(rekordy[0].value)
+    print(rekordy[1].value)
+    print(rekordy[2].value)
 
 
+ecg_thread = threading.Thread(target=pass_ecg_data).start()
 
 
 
