@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 import json
 import threading
+import queue
 
 from flask import Flask, render_template, Response
 from flask_sqlalchemy import SQLAlchemy
@@ -31,6 +32,8 @@ do bazy leci
 70 000 ECG
 6400 BVP
 400 EDA
+
+== 76 800
 '''
 
 with app.app_context():
@@ -77,16 +80,51 @@ with app.app_context():
             ))
         db.session.commit()
 
+#Kolejka 
+q = queue.Queue()
+
+
+
 def pass_ecg_data():
-    with app.app_context():
-        rekordy = SensorData.query.filter_by(sensor='ECG').offset(0).limit(70).all()
-    print(rekordy[0].value)
-    print(rekordy[1].value)
-    print(rekordy[2].value)
+    offset_ecg = 0
+    while True:
+        with app.app_context():
+            q.put(SensorData.query.filter_by(sensor='ECG').offset(offset_ecg).limit(70).all())
+            offset_ecg += 70
+            if offset_ecg >= 70000:
+                offset_ecg = 0
+
+        time.sleep(0.1)
+
+
+def pass_bvp_data():
+    offset_bvp = 0
+
+    while True:
+        with app.app_context():
+            q.put(SensorData.query.filter_by(sensor='BVP').offset(offset_bvp).limit(6).all())
+            offset_bvp += 6
+
+            if offset_bvp >= 6400:
+                offset_bvp == 0
+        time.sleep(0.1)
+
+def pass_eda_data():
+    offset_eda = 0
+
+    while True:
+        with app.app_context():
+            q.put(SensorData.query.filter_by(sensor='EDA').offset(offset_eda).limit(1).all())
+            offset_eda += 1 
+
+            if offset_eda >= 400:
+                offset_eda == 0
+        time.sleep(0.1)
 
 
 ecg_thread = threading.Thread(target=pass_ecg_data).start()
-
+bvp_thread = threading.Thread(target=pass_bvp_data).start()
+eda_thread = threading.Thread(target=pass_eda_data).start()
 
 
 @app.route("/")
@@ -96,9 +134,16 @@ def index():
 @app.route("/stream")
 def stream():
     def generator():
-       pass
+        while True:
+
+            data = q.get()
+            sensor = data[0].sensor
+            values = [r.value for r in data]
+
+            yield f"data: {json.dumps({'sensor': sensor, 'values': values})}\n\n"
+
 
     return Response(generator(), mimetype='text/event-stream')
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5002)
+    app.run(debug=True, use_reloader = False, port=5002)
