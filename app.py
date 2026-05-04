@@ -124,7 +124,7 @@ def pass_eda_data():
 
 ecg_thread = threading.Thread(target=pass_ecg_data).start()
 bvp_thread = threading.Thread(target=pass_bvp_data).start()
-eda_thread = threading.Thread(target=pass_eda_data).start()
+eda_thread = threading.Thread(target=pass_bvp_data).start()
 
 
 @app.route("/")
