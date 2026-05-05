@@ -106,7 +106,7 @@ def pass_bvp_data():
             offset_bvp += 6
 
             if offset_bvp >= 6400:
-                offset_bvp == 0
+                offset_bvp = 0
         time.sleep(0.1)
 
 def pass_eda_data():
@@ -118,13 +118,13 @@ def pass_eda_data():
             offset_eda += 1 
 
             if offset_eda >= 400:
-                offset_eda == 0
+                offset_eda = 0
         time.sleep(0.1)
 
 
 ecg_thread = threading.Thread(target=pass_ecg_data).start()
 bvp_thread = threading.Thread(target=pass_bvp_data).start()
-eda_thread = threading.Thread(target=pass_bvp_data).start()
+eda_thread = threading.Thread(target=pass_eda_data).start()
 
 
 @app.route("/")
