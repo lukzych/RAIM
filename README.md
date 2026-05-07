@@ -57,7 +57,7 @@ W ramach architektury systemu zaimplementowano mechanizmy symulujące typowe pro
 Zrealizowano dwa główne scenariusze zaburzeń:
 
 ### 1. Jitter (Zmienna latencja)
-* **Teoria:** Jitter to zmienność opóźnienia w czasie — nie samo opóźnienie, ale jego nieregularność. W systemach czasu rzeczywistego powoduje to, że pakiety danych nie przychodzą w równych odstępach czasu, co może prowadzić do nieregularnego próbkowania sygnału i utrudniać jego interpretację medyczną.
+* **Teoria:** Jitter to zmienność opóźnienia w czasie - nie samo opóźnienie, ale jego nieregularność. W systemach czasu rzeczywistego powoduje to, że pakiety danych nie przychodzą w równych odstępach czasu, co może prowadzić do nieregularnego próbkowania sygnału i utrudniać jego interpretację medyczną.
 * **Implementacja w kodzie:** Zjawisko to jest symulowane przez losowe odchylenie od bazowego interwału 100 ms. Każdy wątek przed wysłaniem danych losuje dodatkowe opóźnienie i czeka inny czas między kolejnymi wysyłkami, co obrazuje logika: `time.sleep(0.1 + random_delay)`. Na wygenerowanym raporcie pomiarów jitter jest wyraźnie widoczny jako oscylacje latencji między 0.1 a 0.2 sekundy.
 
 ### 2. Packet Loss (Utrata pakietów)
