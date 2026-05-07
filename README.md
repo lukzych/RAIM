@@ -66,5 +66,5 @@ Zrealizowano dwa główne scenariusze zaburzeń:
 
 ### Instrumentacja i Raportowanie
 W celu monitorowania zachowania aplikacji, wdrożono pełną instrumentację na poziomie warstwy danych:
-* **Logi i pomiary:** Aplikacja na bieżąco audytuje swój stan, zapisując dane do tabeli `StreamLog` w bazie SQLite. Każda iteracja wątku otrzymuje stempel czasowy (`timestamp`) oraz zmierzoną wartość opóźnienia (`latency_ms`). Dzięki temu zdarzenia utraty pakietów są jednoznacznie rejestrowane ze znacznikiem `-1`.
+* **Logi i pomiary:** Aplikacja na bieżąco monitoruje swój stan, zapisując dane do tabeli `StreamLog` w bazie SQLite. Każda iteracja wątku otrzymuje stempel czasowy (`timestamp`) oraz zmierzoną wartość opóźnienia (`latency_ms`). Dzięki temu zdarzenia utraty pakietów są jednoznacznie rejestrowane ze znacznikiem `-1`.
 * **Raport z pomiarów:** Wydzielony wątek w tle (po zebraniu próbki 100 iteracji) generuje graficzny raport z pomiarów. Przy użyciu biblioteki `matplotlib` wyrysowany zostaje wykres latencji poszczególnych sensorów. Następnie biblioteka `reportlab` automatycznie osadza ten wykres w dokumencie `report.pdf`.
