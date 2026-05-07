@@ -10,6 +10,9 @@ import queue
 from flask import Flask, render_template, Response
 from flask_sqlalchemy import SQLAlchemy
 
+from reportlab.pdfgen import canvas
+import matplotlib.pyplot as plt
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sensors.db'
 db = SQLAlchemy(app)
@@ -110,7 +113,7 @@ def pass_bvp_data():
     while True:
         random_delay = random.uniform(0.1,0.2)
         with app.app_context():
-            records = SensorData.query.filter_by(sensor='BVP').offset(offset_bvp).limit(70).all()
+            records = SensorData.query.filter_by(sensor='BVP').offset(offset_bvp).limit(6).all()
             q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
             db.session.add(StreamLog(
                 sensor='BVP',
@@ -130,7 +133,7 @@ def pass_eda_data():
     while True:
         random_delay = random.uniform(0.1, 0.2)
         with app.app_context():
-            records = SensorData.query.filter_by(sensor='EDA').offset(offset_eda).limit(70).all()
+            records = SensorData.query.filter_by(sensor='EDA').offset(offset_eda).limit(1).all()
             q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
             db.session.add(StreamLog(
                 sensor='EDA',
@@ -144,12 +147,45 @@ def pass_eda_data():
                 offset_eda = 0
         time.sleep(0.1 + random_delay)
 
+def generate_report():
+    time.sleep(10)
+    with app.app_context():
+        logs_etc = StreamLog.query.filter_by(sensor='ECG').limit(10).all()
+        logs_bvp = StreamLog.query.filter_by(sensor='BVP').limit(10).all()
+        logs_eda = StreamLog.query.filter_by(sensor='EDA').limit(10).all()
+
+        latency_ecg = [log.latency_ms for log in logs_etc]
+        latency_bvp = [log.latency_ms for log in logs_bvp]
+        latency_eda = [log.latency_ms for log in logs_eda]
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(latency_ecg, label='ECG', color='blue')
+    plt.plot(latency_bvp, label='BVP', color='green')
+    plt.plot(latency_eda, label='EDA', color='red')
+    
+    plt.xlabel('Iteracja')
+    plt.ylabel('Latencja [s]')
+    plt.title('Latencja sensorów w czasie')
+    plt.legend()
+    plt.savefig('latency_chart.png')
+    plt.close()
+    
+
+    c = canvas.Canvas("report.pdf")
+    c.drawString(250,800, "Raport")
+    c.drawString(400,800, "Lukasz Zych")
+    c.drawString(400,780, "Rafal Kruszewski")
+    c.drawString(100,700, "Pomiary latencji")
+    c.drawImage('latency_chart.png', 50, 350, width=500, height=300)
+    c.save()
+
 
 
 ecg_thread = threading.Thread(target=pass_ecg_data).start()
 bvp_thread = threading.Thread(target=pass_bvp_data).start()
 eda_thread = threading.Thread(target=pass_eda_data).start()
 
+report_thread = threading.Thread(target=generate_report).start()
 
 @app.route("/")
 def index():
@@ -169,6 +205,9 @@ def stream():
 
 
     return Response(generator(), mimetype='text/event-stream')
+
+    
+
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader = False, port=5002)
