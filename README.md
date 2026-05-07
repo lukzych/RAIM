@@ -50,26 +50,21 @@ System opiera się na trzech warstwach:
 
 ---
 
-## 3. Symulacja zaburzeń
+## 3. Symulacja zaburzeń w transmisji sygnałów (Etap 2)
 
-### Jitter
-Jitter to zmienność opóźnienia w czasie — nie samo opóźnienie, ale jego nieregularność. W systemach czasu rzeczywistego jitter powoduje że dane nie przychodzą w równych odstępach czasu.
+W ramach architektury systemu zaimplementowano mechanizmy symulujące typowe problemy z transmisją danych. Ze względu na drastyczne różnice w częstotliwości próbkowania poszczególnych sensorów (od powolnego 4 Hz dla EDA do aż 700 Hz dla ECG), system musi radzić sobie z niestabilnością łącza i opóźnieniami.
 
-W projekcie jitter jest symulowany przez losowe odchylenie od bazowego interwału 100ms:
+Zrealizowano dwa główne scenariusze zaburzeń:
 
-time.sleep(0.1 + random.uniform(0.1, 0.2))
+### 3.1. Jitter (Zmienna latencja)
+* **Teoria:** Jitter to zmienność opóźnienia w czasie — nie samo opóźnienie, ale jego nieregularność. W systemach czasu rzeczywistego powoduje to, że pakiety danych nie przychodzą w równych odstępach czasu, co może prowadzić do nieregularnego próbkowania sygnału i utrudniać jego interpretację medyczną.
+* **Implementacja w kodzie:** Zjawisko to jest symulowane przez losowe odchylenie od bazowego interwału 100 ms. Każdy wątek przed wysłaniem danych losuje dodatkowe opóźnienie i czeka inny czas między kolejnymi wysyłkami, co obrazuje logika: `time.sleep(0.1 + random_delay)`. Na wygenerowanym raporcie pomiarów jitter jest wyraźnie widoczny jako oscylacje latencji między 0.1 a 0.2 sekundy.
 
-Każdy wątek czeka inny czas między kolejnymi wysyłkami danych. Na wykresie latencji widoczny jako oscylacje wartości między 0.1 a 0.2 sekundy.
+### 3.2. Packet Loss (Utrata pakietów)
+* **Teoria:** Packet loss oznacza, że dane bezpowrotnie nie zostają dostarczone do odbiorcy (np. z powodu zakłóceń lub słabego sygnału połączenia). W systemach czasu rzeczywistego utrata pakietów powoduje chwilowe przerwy w sygnale.
+* **Implementacja w kodzie:** Symulacja polega na losowym pomijaniu wysyłki paczki z 10-procentowym prawdopodobieństwem (`if random_data_loss > 0.1`). Jeśli pakiet ulega zniszczeniu, program omija instrukcję dodania danych do kolejki (`q.put`). Zmienna `offset` w bazie przesuwa się jednak dalej, więc po kilku iteracjach system znowu pokazuje dane z odpowiedniego momentu czasowego. Skutkuje to tym, że gdy sygnał ECG ominie iterację, a BVP nie, wykresy przez chwilę nie pokazują tego samego momentu (następuje chwilowa desynchronizacja). Zjawisko to jest oznaczane w logach specjalną flagą utraty: `latency_ms = -1`.
 
-W rzeczywistych systemach medycznych jitter może powodować nieregularne próbkowanie sygnału, co utrudnia analizę i interpretację danych
-
-### Packet Loss
-Packet loss (utrata pakietów) oznacza że dane nie zostają dostarczone do odbiorcy. Utrata pakietów może wynikać z zakłóceń, słabego sygnału.
-
-W projekcie packet loss jest symulowany przez losowe pomijanie wysyłki paczki:
-if random.uniform(0, 1) > 0.1:  # 10% szans na utratę
-q.put(dane)
-else:
-zapisz latency_ms = -1  # znacznik utraty
-Na wykresie latencji packet loss widoczny jako skoki do wartości -1. Powoduje chwilowe przerwy w sygnale na wykresie — gdy ECG ominie iterację a BVP nie, wykresy przez chwilę nie pokazują tego samego momentu czasowego.
-
+### 3.3. Instrumentacja i Raportowanie
+W celu monitorowania zachowania aplikacji, wdrożono pełną instrumentację na poziomie warstwy danych:
+* **Logi i pomiary:** Aplikacja na bieżąco audytuje swój stan, zapisując dane do tabeli `StreamLog` w bazie SQLite. Każda iteracja wątku otrzymuje stempel czasowy (`timestamp`) oraz zmierzoną wartość opóźnienia (`latency_ms`). Dzięki temu zdarzenia utraty pakietów są jednoznacznie rejestrowane ze znacznikiem `-1`.
+* **Raport z pomiarów:** Wydzielony wątek w tle (po zebraniu próbki 100 iteracji) generuje graficzny raport z pomiarów. Przy użyciu biblioteki `matplotlib` wyrysowany zostaje wykres latencji poszczególnych sensorów. Następnie biblioteka `reportlab` automatycznie osadza ten wykres w dokumencie `report.pdf`, dopisując do niego wygenerowane bezpośrednio z poziomu kodu wnioski teoretyczne.
