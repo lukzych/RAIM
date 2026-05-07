@@ -11,6 +11,9 @@ from flask import Flask, render_template, Response
 from flask_sqlalchemy import SQLAlchemy
 
 from reportlab.pdfgen import canvas
+
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 app = Flask(__name__)
@@ -91,20 +94,34 @@ def pass_ecg_data():
     offset_ecg = 0
     while True:
         random_delay = random.uniform(0.1, 0.2)
-        with app.app_context():
-            records = SensorData.query.filter_by(sensor='ECG').offset(offset_ecg).limit(70).all()
-            q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
-            db.session.add(StreamLog(
-                sensor='ECG',
-                timestamp=datetime.now(),
-                latency_ms= random_delay
-            ))
-            db.session.commit()
-            offset_ecg += 70
-            if offset_ecg >= 70000:
-                offset_ecg = 0
+        random_data_loss = random.uniform(0,1)
+        if random_data_loss > 0.1:
+            with app.app_context():
+                records = SensorData.query.filter_by(sensor='ECG').offset(offset_ecg).limit(70).all()
+                q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
+                db.session.add(StreamLog(
+                    sensor='ECG',
+                    timestamp=datetime.now(),
+                    latency_ms= random_delay
+                ))
+                db.session.commit()
+
+        else:
+            with app.app_context():
+                db.session.add(StreamLog(
+                        sensor='ECG',
+                        timestamp=datetime.now(),
+                        latency_ms= -1
+                    ))
+                db.session.commit()
+
+        offset_ecg += 70
+        if offset_ecg >= 70000:
+            offset_ecg = 0
 
         time.sleep(0.1 + random_delay)
+
+    
 
 
 def pass_bvp_data():
@@ -112,19 +129,31 @@ def pass_bvp_data():
 
     while True:
         random_delay = random.uniform(0.1,0.2)
-        with app.app_context():
-            records = SensorData.query.filter_by(sensor='BVP').offset(offset_bvp).limit(6).all()
-            q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
-            db.session.add(StreamLog(
-                sensor='BVP',
-                timestamp=datetime.now(),
-                latency_ms= random_delay
-            ))
-            db.session.commit()
-            offset_bvp += 6
+        random_data_loss = random.uniform(0,1)
 
-            if offset_bvp >= 6400:
-                offset_bvp = 0
+        if random_data_loss > 0.1:
+            with app.app_context():
+                records = SensorData.query.filter_by(sensor='BVP').offset(offset_bvp).limit(6).all()
+                q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
+                db.session.add(StreamLog(
+                    sensor='BVP',
+                    timestamp=datetime.now(),
+                    latency_ms= random_delay
+                ))
+                db.session.commit()
+
+        else:
+            with app.app_context():
+                db.session.add(StreamLog(
+                        sensor='BVP',
+                        timestamp=datetime.now(),
+                        latency_ms= -1
+                    ))
+                db.session.commit()
+        offset_bvp += 6
+
+        if offset_bvp >= 6400:
+            offset_bvp = 0
         time.sleep(0.1 + random_delay)
 
 def pass_eda_data():
@@ -132,27 +161,39 @@ def pass_eda_data():
 
     while True:
         random_delay = random.uniform(0.1, 0.2)
-        with app.app_context():
-            records = SensorData.query.filter_by(sensor='EDA').offset(offset_eda).limit(1).all()
-            q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
-            db.session.add(StreamLog(
-                sensor='EDA',
-                timestamp=datetime.now(),
-                latency_ms= random_delay
-            ))
-            db.session.commit()
-            offset_eda += 1
+        random_data_loss = random.uniform(0,1)
 
-            if offset_eda >= 400:
-                offset_eda = 0
+        if random_data_loss > 0.1:
+            with app.app_context():
+                records = SensorData.query.filter_by(sensor='EDA').offset(offset_eda).limit(1).all()
+                q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
+                db.session.add(StreamLog(
+                    sensor='EDA',
+                    timestamp=datetime.now(),
+                    latency_ms= random_delay
+                ))
+                db.session.commit()
+
+        else:
+            with app.app_context():
+                db.session.add(StreamLog(
+                        sensor='EDA',
+                        timestamp=datetime.now(),
+                        latency_ms= -1
+                    ))
+                db.session.commit()
+        offset_eda += 1
+
+        if offset_eda >= 400:
+            offset_eda = 0
         time.sleep(0.1 + random_delay)
 
 def generate_report():
     time.sleep(10)
     with app.app_context():
-        logs_etc = StreamLog.query.filter_by(sensor='ECG').limit(10).all()
-        logs_bvp = StreamLog.query.filter_by(sensor='BVP').limit(10).all()
-        logs_eda = StreamLog.query.filter_by(sensor='EDA').limit(10).all()
+        logs_etc = StreamLog.query.filter_by(sensor='ECG').limit(100).all()
+        logs_bvp = StreamLog.query.filter_by(sensor='BVP').limit(100).all()
+        logs_eda = StreamLog.query.filter_by(sensor='EDA').limit(100).all()
 
         latency_ecg = [log.latency_ms for log in logs_etc]
         latency_bvp = [log.latency_ms for log in logs_bvp]
@@ -177,8 +218,19 @@ def generate_report():
     c.drawString(400,780, "Rafal Kruszewski")
     c.drawString(100,700, "Pomiary latencji")
     c.drawImage('latency_chart.png', 50, 350, width=500, height=300)
-    c.save()
+    c.drawString(50, 330, "Latencja w systemie agregacji danych z wielu sensorów " \
+    "to czas miedzy momentem gdy sensor ")
+    c.drawString(50, 315,"wygenerowal probke a momentem gdy dane zostaly wyslane " \
+    "do odbiorcy")
 
+    c.drawString(50,300, "W tym projekcie latencja jest symulowana przez losowe " \
+    "opoznienie random_delay dodawane do ")
+    c.drawString(50,285, "bazowego interwalu 100ms kazdego watku, reprezentuje niestabilnosc " \
+    "lacza miedzy")
+    c.drawString(50,270, "sensorem a serwerem, w rzeczywistych systemach " \
+    "latencja zalezy od np. jakosci polaczenia")
+    c.save()
+    
 
 
 ecg_thread = threading.Thread(target=pass_ecg_data).start()
