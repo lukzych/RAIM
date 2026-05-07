@@ -56,15 +56,15 @@ W ramach architektury systemu zaimplementowano mechanizmy symulujące typowe pro
 
 Zrealizowano dwa główne scenariusze zaburzeń:
 
-### 3.1. Jitter (Zmienna latencja)
+### 1. Jitter (Zmienna latencja)
 * **Teoria:** Jitter to zmienność opóźnienia w czasie — nie samo opóźnienie, ale jego nieregularność. W systemach czasu rzeczywistego powoduje to, że pakiety danych nie przychodzą w równych odstępach czasu, co może prowadzić do nieregularnego próbkowania sygnału i utrudniać jego interpretację medyczną.
 * **Implementacja w kodzie:** Zjawisko to jest symulowane przez losowe odchylenie od bazowego interwału 100 ms. Każdy wątek przed wysłaniem danych losuje dodatkowe opóźnienie i czeka inny czas między kolejnymi wysyłkami, co obrazuje logika: `time.sleep(0.1 + random_delay)`. Na wygenerowanym raporcie pomiarów jitter jest wyraźnie widoczny jako oscylacje latencji między 0.1 a 0.2 sekundy.
 
-### 3.2. Packet Loss (Utrata pakietów)
+### 2. Packet Loss (Utrata pakietów)
 * **Teoria:** Packet loss oznacza, że dane bezpowrotnie nie zostają dostarczone do odbiorcy (np. z powodu zakłóceń lub słabego sygnału połączenia). W systemach czasu rzeczywistego utrata pakietów powoduje chwilowe przerwy w sygnale.
 * **Implementacja w kodzie:** Symulacja polega na losowym pomijaniu wysyłki paczki z 10-procentowym prawdopodobieństwem (`if random_data_loss > 0.1`). Jeśli pakiet ulega zniszczeniu, program omija instrukcję dodania danych do kolejki (`q.put`). Zmienna `offset` w bazie przesuwa się jednak dalej, więc po kilku iteracjach system znowu pokazuje dane z odpowiedniego momentu czasowego. Skutkuje to tym, że gdy sygnał ECG ominie iterację, a BVP nie, wykresy przez chwilę nie pokazują tego samego momentu (następuje chwilowa desynchronizacja). Zjawisko to jest oznaczane w logach specjalną flagą utraty: `latency_ms = -1`.
 
-### 3.3. Instrumentacja i Raportowanie
+### Instrumentacja i Raportowanie
 W celu monitorowania zachowania aplikacji, wdrożono pełną instrumentację na poziomie warstwy danych:
 * **Logi i pomiary:** Aplikacja na bieżąco audytuje swój stan, zapisując dane do tabeli `StreamLog` w bazie SQLite. Każda iteracja wątku otrzymuje stempel czasowy (`timestamp`) oraz zmierzoną wartość opóźnienia (`latency_ms`). Dzięki temu zdarzenia utraty pakietów są jednoznacznie rejestrowane ze znacznikiem `-1`.
 * **Raport z pomiarów:** Wydzielony wątek w tle (po zebraniu próbki 100 iteracji) generuje graficzny raport z pomiarów. Przy użyciu biblioteki `matplotlib` wyrysowany zostaje wykres latencji poszczególnych sensorów. Następnie biblioteka `reportlab` automatycznie osadza ten wykres w dokumencie `report.pdf`, dopisując do niego wygenerowane bezpośrednio z poziomu kodu wnioski teoretyczne.
