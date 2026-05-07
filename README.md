@@ -48,3 +48,28 @@ System opiera się na trzech warstwach:
 * **Warstwa serwera (Backend):** aplikacja w języku Python (Flask), która odpowiada za wczytywanie danych, ich wstępne przetwarzanie oraz udostępnianie ich do interfejsu użytkownika.
 * **Warstwa interfejsu (Frontend):** aplikacja działająca w przeglądarce, wykorzystująca JavaScript oraz technologię Canvas. Odpowiada za dynamiczną wizualizację i agregację sygnałów oraz obsługę wspólnego dashboardu.
 
+---
+
+## 3. Symulacja zaburzeń
+
+### Jitter
+Jitter to zmienność opóźnienia w czasie — nie samo opóźnienie, ale jego nieregularność. W systemach czasu rzeczywistego jitter powoduje że dane nie przychodzą w równych odstępach czasu.
+
+W projekcie jitter jest symulowany przez losowe odchylenie od bazowego interwału 100ms:
+
+time.sleep(0.1 + random.uniform(0.1, 0.2))
+
+Każdy wątek czeka inny czas między kolejnymi wysyłkami danych. Na wykresie latencji widoczny jako oscylacje wartości między 0.1 a 0.2 sekundy.
+
+W rzeczywistych systemach medycznych jitter może powodować nieregularne próbkowanie sygnału, co utrudnia analizę i interpretację danych
+
+### Packet Loss
+Packet loss (utrata pakietów) oznacza że dane nie zostają dostarczone do odbiorcy. Utrata pakietów może wynikać z zakłóceń, słabego sygnału.
+
+W projekcie packet loss jest symulowany przez losowe pomijanie wysyłki paczki:
+if random.uniform(0, 1) > 0.1:  # 10% szans na utratę
+q.put(dane)
+else:
+zapisz latency_ms = -1  # znacznik utraty
+Na wykresie latencji packet loss widoczny jako skoki do wartości -1. Powoduje chwilowe przerwy w sygnale na wykresie — gdy ECG ominie iterację a BVP nie, wykresy przez chwilę nie pokazują tego samego momentu czasowego.
+

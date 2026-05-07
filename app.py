@@ -121,16 +121,14 @@ def pass_ecg_data():
 
         time.sleep(0.1 + random_delay)
 
-    
-
 
 def pass_bvp_data():
     offset_bvp = 0
 
     while True:
-        random_delay = random.uniform(0.1,0.2)
+        random_delay = random.uniform(0.1, 0.2)
         random_data_loss = random.uniform(0,1)
-
+        
         if random_data_loss > 0.1:
             with app.app_context():
                 records = SensorData.query.filter_by(sensor='BVP').offset(offset_bvp).limit(6).all()
@@ -154,7 +152,7 @@ def pass_bvp_data():
 
         if offset_bvp >= 6400:
             offset_bvp = 0
-        time.sleep(0.1 + random_delay)
+        time.sleep(0.1)
 
 def pass_eda_data():
     offset_eda = 0
@@ -229,6 +227,13 @@ def generate_report():
     "lacza miedzy")
     c.drawString(50,270, "sensorem a serwerem, w rzeczywistych systemach " \
     "latencja zalezy od np. jakosci polaczenia")
+    c.drawString(50, 225, "Packet loss - utrata pakietow, wystepuje gdy dane nie zostaly " \
+    "wyslane do odbiorcy")
+    c.drawString(50,210, "W systemach czasu rzeczywistego utrata pakietow powoduje przerwy" \
+    " w sygnale ")
+    c.drawString(50,195, "Offset przesuwa sie dalej wiec po kilku iteracjach znowu pokaze" \
+    " dane z")
+    c.drawString(50,180,"podobnego momentu czasowego")
     c.save()
     
 
