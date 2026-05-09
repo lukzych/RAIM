@@ -189,9 +189,9 @@ def pass_eda_data():
 def generate_report():
     time.sleep(10)
     with app.app_context():
-        logs_etc = StreamLog.query.filter_by(sensor='ECG').limit(100).all()
-        logs_bvp = StreamLog.query.filter_by(sensor='BVP').limit(100).all()
-        logs_eda = StreamLog.query.filter_by(sensor='EDA').limit(100).all()
+        logs_etc = StreamLog.query.filter_by(sensor='ECG').limit(50).all()
+        logs_bvp = StreamLog.query.filter_by(sensor='BVP').limit(50).all()
+        logs_eda = StreamLog.query.filter_by(sensor='EDA').limit(50).all()
 
         latency_ecg = [log.latency_ms for log in logs_etc]
         latency_bvp = [log.latency_ms for log in logs_bvp]
