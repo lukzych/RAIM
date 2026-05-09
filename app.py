@@ -88,103 +88,26 @@ with app.app_context():
 #Kolejka 
 q = queue.Queue()
 
-
-
-def pass_ecg_data():
-    offset_ecg = 0
+def pass_sensor_data(sensor_name, batch_size, max_offset):
+    offset = 0
     while True:
         random_delay = random.uniform(0.1, 0.2)
-        random_data_loss = random.uniform(0,1)
+        random_data_loss = random.uniform(0, 1)
         if random_data_loss > 0.1:
             with app.app_context():
-                records = SensorData.query.filter_by(sensor='ECG').offset(offset_ecg).limit(70).all()
+                records = SensorData.query.filter_by(sensor=sensor_name).offset(offset).limit(batch_size).all()
                 q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
-                db.session.add(StreamLog(
-                    sensor='ECG',
-                    timestamp=datetime.now(),
-                    latency_ms= random_delay
-                ))
+                db.session.add(StreamLog(sensor=sensor_name, timestamp=datetime.now(), latency_ms=random_delay))
                 db.session.commit()
-
         else:
             with app.app_context():
-                db.session.add(StreamLog(
-                        sensor='ECG',
-                        timestamp=datetime.now(),
-                        latency_ms= -1
-                    ))
+                db.session.add(StreamLog(sensor=sensor_name, timestamp=datetime.now(), latency_ms=-1))
                 db.session.commit()
-
-        offset_ecg += 70
-        if offset_ecg >= 70000:
-            offset_ecg = 0
-
+        offset += batch_size
+        if offset >= max_offset:
+            offset = 0
         time.sleep(0.1 + random_delay)
 
-
-def pass_bvp_data():
-    offset_bvp = 0
-
-    while True:
-        random_delay = random.uniform(0.1, 0.2)
-        random_data_loss = random.uniform(0,1)
-        
-        if random_data_loss > 0.1:
-            with app.app_context():
-                records = SensorData.query.filter_by(sensor='BVP').offset(offset_bvp).limit(6).all()
-                q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
-                db.session.add(StreamLog(
-                    sensor='BVP',
-                    timestamp=datetime.now(),
-                    latency_ms= random_delay
-                ))
-                db.session.commit()
-
-        else:
-            with app.app_context():
-                db.session.add(StreamLog(
-                        sensor='BVP',
-                        timestamp=datetime.now(),
-                        latency_ms= -1
-                    ))
-                db.session.commit()
-        offset_bvp += 6
-
-        if offset_bvp >= 6400:
-            offset_bvp = 0
-        time.sleep(0.1)
-
-def pass_eda_data():
-    offset_eda = 0
-
-    while True:
-        random_delay = random.uniform(0.1, 0.2)
-        random_data_loss = random.uniform(0,1)
-
-        if random_data_loss > 0.1:
-            with app.app_context():
-                records = SensorData.query.filter_by(sensor='EDA').offset(offset_eda).limit(1).all()
-                q.put([{'sensor': r.sensor, 'value': r.value} for r in records])
-                db.session.add(StreamLog(
-                    sensor='EDA',
-                    timestamp=datetime.now(),
-                    latency_ms= random_delay
-                ))
-                db.session.commit()
-
-        else:
-            with app.app_context():
-                db.session.add(StreamLog(
-                        sensor='EDA',
-                        timestamp=datetime.now(),
-                        latency_ms= -1
-                    ))
-                db.session.commit()
-        offset_eda += 1
-
-        if offset_eda >= 400:
-            offset_eda = 0
-        time.sleep(0.1 + random_delay)
 
 def generate_report():
     time.sleep(10)
@@ -238,9 +161,9 @@ def generate_report():
     
 
 
-ecg_thread = threading.Thread(target=pass_ecg_data).start()
-bvp_thread = threading.Thread(target=pass_bvp_data).start()
-eda_thread = threading.Thread(target=pass_eda_data).start()
+ecg_thread = threading.Thread(target=pass_sensor_data, args=("ECG",70,70000)).start()
+bvp_thread = threading.Thread(target=pass_sensor_data, args=("BVP",6,6400)).start()
+eda_thread = threading.Thread(target=pass_sensor_data, args=("EDA",1,400)).start()
 
 report_thread = threading.Thread(target=generate_report).start()
 
