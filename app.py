@@ -87,10 +87,14 @@ with app.app_context():
 
 #Kolejka 
 q = queue.Queue()
-
-def pass_sensor_data(sensor_name, batch_size, max_offset):
+def pass_sensor_data(sensor_name, batch_size, max_offset, lock_a, lock_b):
     offset = 0
+    
     while True:
+        if lock_a:
+            lock_a.acquire()
+        if lock_b:
+            lock_b.acquire()
         random_delay = random.uniform(0.1, 0.2)
         random_data_loss = random.uniform(0, 1)
         if random_data_loss > 0.1:
@@ -107,6 +111,10 @@ def pass_sensor_data(sensor_name, batch_size, max_offset):
         if offset >= max_offset:
             offset = 0
         time.sleep(0.1 + random_delay)
+        if lock_b:
+            lock_b.release()
+        if lock_a:
+            lock_a.release()
 
 
 def generate_report():
@@ -160,10 +168,12 @@ def generate_report():
     c.save()
     
 
+lock_first = threading.Lock()
+lock_secound = threading.Lock()
 
-ecg_thread = threading.Thread(target=pass_sensor_data, args=("ECG",70,70000)).start()
-bvp_thread = threading.Thread(target=pass_sensor_data, args=("BVP",6,6400)).start()
-eda_thread = threading.Thread(target=pass_sensor_data, args=("EDA",1,400)).start()
+ecg_thread = threading.Thread(target=pass_sensor_data, args=("ECG",70,70000,None, None)).start()
+bvp_thread = threading.Thread(target=pass_sensor_data, args=("BVP",6,6400, None, None)).start()
+eda_thread = threading.Thread(target=pass_sensor_data, args=("EDA",1,400, None, None)).start()
 
 report_thread = threading.Thread(target=generate_report).start()
 
