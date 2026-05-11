@@ -136,6 +136,11 @@ def generate_report():
 lock_first = threading.Lock()
 lock_second = threading.Lock()
 
+#TODO Dodanie guzika, który wywołuje deadlock np. na 2 sekundy. Fajnie będzie wygenerować taki wykres 
+#Pokazanie że wątki na siebie czekały i żaden z nich się nie wykonywał następnie jakoś zwolnienie tego locka
+# i pokazanie naprawe wykresów 
+#TODO Sprawdzoć czy ma to wpływ na synchronizacje czy wykresy się nie rozjadą (raczej na pewno się rozjadą)
+#bo EDA będzie cały czas pakować dane do kolejki a tamte nie
 ecg_thread = threading.Thread(target=pass_sensor_data, args=("ECG",70,70000,None, None)).start()
 bvp_thread = threading.Thread(target=pass_sensor_data, args=("BVP",6,6400, None, None)).start()
 eda_thread = threading.Thread(target=pass_sensor_data, args=("EDA",1,400, None, None)).start()
