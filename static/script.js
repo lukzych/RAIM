@@ -123,3 +123,9 @@ document.getElementById('theme-btn').addEventListener('click', () => {
     ecgChart.update();
     bvpChart.update();
 });
+
+document.getElementById('deadlock-btn').addEventListener('click', () => {
+    fetch('/trigger_deadlock');
+});
+
+

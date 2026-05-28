@@ -49,7 +49,18 @@ body {
 }
 
 #theme-btn{
-   color: var(--theme-btn-col);
+    color: var(--theme-btn-col);
+    background-color: var(--theme-btn-bcg-col);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: sans-serif;
+}
+
+#deadlock-btn{
+    color: var(--theme-btn-col);
     background-color: var(--theme-btn-bcg-col);
     border: 1px solid var(--border);
     border-radius: 8px;

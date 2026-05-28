@@ -12,10 +12,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 from reportlab.pdfgen import canvas
 
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
 from report import generate_pdf
 
 app = Flask(__name__)
@@ -92,11 +88,24 @@ q = queue.Queue()
 def pass_sensor_data(sensor_name, batch_size, max_offset, lock_a, lock_b):
     offset = 0
     
+
     while True:
-        if lock_a:
-            lock_a.acquire()
-        if lock_b:
-            lock_b.acquire()
+
+        acquired_a = False
+        acquired_b = False
+
+        if deadlock_active and lock_a:
+            acquired_a = lock_a.acquire(timeout=3)
+            if not acquired_a:
+                continue
+
+        if deadlock_active and lock_b:
+            acquired_b = lock_b.acquire(timeout=3)
+            if not acquired_b:
+                if acquired_a and lock_a:
+                    lock_a.release()
+                continue
+
         random_delay = random.uniform(0.1, 0.2)
         random_data_loss = random.uniform(0, 1)
         if random_data_loss > 0.1:
@@ -113,10 +122,15 @@ def pass_sensor_data(sensor_name, batch_size, max_offset, lock_a, lock_b):
         if offset >= max_offset:
             offset = 0
         time.sleep(0.1 + random_delay)
-        if lock_b:
+
+
+        if acquired_b and lock_b:
             lock_b.release()
-        if lock_a:
+        if acquired_a and lock_a:
             lock_a.release()
+
+        acquired_a = False
+        acquired_b = False
 
 
 def generate_report():
@@ -136,13 +150,10 @@ def generate_report():
 lock_first = threading.Lock()
 lock_second = threading.Lock()
 
-#TODO Dodanie guzika, który wywołuje deadlock np. na 2 sekundy. Fajnie będzie wygenerować taki wykres 
-#Pokazanie że wątki na siebie czekały i żaden z nich się nie wykonywał następnie jakoś zwolnienie tego locka
-# i pokazanie naprawe wykresów 
-#TODO Sprawdzoć czy ma to wpływ na synchronizacje czy wykresy się nie rozjadą (raczej na pewno się rozjadą)
-#bo EDA będzie cały czas pakować dane do kolejki a tamte nie
-ecg_thread = threading.Thread(target=pass_sensor_data, args=("ECG",70,70000,None, None)).start()
-bvp_thread = threading.Thread(target=pass_sensor_data, args=("BVP",6,6400, None, None)).start()
+
+deadlock_active = False
+ecg_thread = threading.Thread(target=pass_sensor_data, args=("ECG",70,70000,lock_first, lock_second)).start()
+bvp_thread = threading.Thread(target=pass_sensor_data, args=("BVP",6,6400, lock_second, lock_first)).start()
 eda_thread = threading.Thread(target=pass_sensor_data, args=("EDA",1,400, None, None)).start()
 
 report_thread = threading.Thread(target=generate_report).start()
@@ -166,8 +177,15 @@ def stream():
 
     return Response(generator(), mimetype='text/event-stream')
 
-    
-
+@app.route('/trigger_deadlock')
+def trigger_deadlock():
+    def reset():
+        global deadlock_active
+        deadlock_active = True
+        time.sleep(2)
+        deadlock_active = False
+    threading.Thread(target=reset).start()
+    return {'status': 'ok'}
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader = False, port=5002)
