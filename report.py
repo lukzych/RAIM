@@ -38,7 +38,11 @@ def generate_pdf(latency_ecg, latency_bvp, latency_eda):
         "wyslane do odbiorcy")
         c.drawString(50,210, "W systemach czasu rzeczywistego utrata pakietow powoduje przerwy" \
         " w sygnale ")
-        c.drawString(50,195, "Offset przesuwa sie dalej wiec po kilku iteracjach znowu pokaze" \
-        " dane z")
+        c.drawString(50,195, "Offset przesuwa sie dalej wiec po kilku iteracjach znowu pokaze")
         c.drawString(50,180,"podobnego momentu czasowego")
+        c.drawString(50, 150, "Deadlock (zakleszczenie) - wystepuje gdy watki wzajemnie blokuja sobie dostep")
+        c.drawString(50, 135, "do wspoldzielonych zasobow i czekaja na zwolnienie blokady.")
+        c.drawString(50, 120, "W efekcie aplikacja calkowicie sie zawiesza i przestaje przetwarzac dane.")
+        c.drawString(50, 105, "W tym projekcie aby uniknac zakleszczen zastosowano kolejke (Queue),")
+        c.drawString(50, 90, "ktora bezpiecznie zarzadza przeplywem danych miedzy sensorami a serwerem.")
         c.save()
