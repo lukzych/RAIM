@@ -72,3 +72,11 @@ W celu monitorowania zachowania aplikacji, wdrożono pełną instrumentację na 
 ### 3. Deadlock (Zakleszczenie)
 * **Teoria:** Deadlock (zakleszczenie) to krytyczny błąd współbieżności, który występuje, gdy wątki wzajemnie blokują sobie dostęp do współdzielonych zasobów i w nieskończoność czekają na zwolnienie blokady. Wykorzystywanie mechanizmu `Lock` do ochrony zasobów w aplikacjach wielowątkowych zawsze niesie ze sobą ryzyko takiego zakleszczenia i zawieszenia całego systemu. 
 * **Implementacja:** Aby zaprezentować to zjawisko, w interfejsie użytkownika dodano przycisk "Simulate Deadlock", który poprzez endpoint `/trigger_deadlock` aktywuje w backendzie flagę `deadlock_active` na 2 sekundy. Do symulacji wykorzystano dwa obiekty blokad (`lock_first` oraz `lock_second`). Wątek obsługujący sygnał ECG próbuje najpierw pozyskać `lock_first`, a następnie `lock_second`. Wątek BVP robi to w odwrotnej kolejności (najpierw `lock_second`, potem `lock_first`). Gdy oba wątki wejdą do sekcji krytycznej, dochodzi do tzw. cyklicznego oczekiwania (circular wait) i system się blokuje. Na frontendzie skutkuje to natychmiastowym zamrożeniem wykresów. Aby zapobiec trwałemu uszkodzeniu aplikacji, zaimplementowano mechanizm wyjścia awaryjnego (ang. timeout) ustawiony na 3 sekundy (`timeout=3`), po którym wątki zwalniają blokady i wznawiają przesyłanie danych.
+
+## Filmik promocyjny
+
+
+https://github.com/user-attachments/assets/592b237a-57b3-46f7-92d9-b317a0c38d68
+
+
+
